@@ -12,10 +12,10 @@ contract OrbitPayFactoryScript is Script {
     address public constant USDT = 0xd2ECba4dFaE14CcE2d2e767974C01532C1f7EA07;
     address public constant WETH = 0x40e43BE2fEaf21cB459C4f493c14F0ad4A0E3451;
 
-    function run() public {
+    function run() public returns (OrbitPayFactory orbitPay_) {
         vm.startBroadcast();
 
-        orbitPay = new OrbitPayFactory(USDC, USDT, WETH);
+        orbitPay_ = new OrbitPayFactory(USDC, USDT, WETH);
 
         vm.stopBroadcast();
     }
