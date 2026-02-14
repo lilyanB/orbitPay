@@ -12,10 +12,10 @@ contract OrbitPayScript is Script {
     address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address public constant CRE = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-    function run() public {
+    function run(address owner) public {
         vm.startBroadcast();
 
-        orbitPay = new OrbitPay(USDC, USDT, WETH, CRE);
+        orbitPay = new OrbitPay(owner, USDC, USDT, WETH, CRE);
 
         vm.stopBroadcast();
     }

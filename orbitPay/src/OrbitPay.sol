@@ -2,10 +2,12 @@
 pragma solidity 0.8.28;
 
 import {IERC20} from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
+import {Ownable2Step} from "@openzeppelin-contracts-5/access/Ownable2Step.sol";
+import {Ownable} from "@openzeppelin-contracts-5/access/Ownable.sol";
 
 import {IOrbitPay} from "./IOrbitPay.sol";
 
-contract OrbitPay is IOrbitPay {
+contract OrbitPay is IOrbitPay, Ownable2Step {
     /// @notice The ERC20 token contracts for USDC.
     IERC20 public immutable USDC;
 
@@ -22,16 +24,17 @@ contract OrbitPay is IOrbitPay {
     mapping(address => UserInfo) internal _userInfo;
 
     /**
-     * @param _usdc The address of the USDC token contract.
-     * @param _usdt The address of the USDT token contract.
-     * @param _weth The address of the WETH token contract.
-     * @param _cre The address of the CRE contract.
+     * @param owner The address of the initial owner of the contract.
+     * @param usdc The address of the USDC token contract.
+     * @param usdt The address of the USDT token contract.
+     * @param weth The address of the WETH token contract.
+     * @param cre The address of the CRE contract.
      */
-    constructor(address _usdc, address _usdt, address _weth, address _cre) {
-        USDC = IERC20(_usdc);
-        USDT = IERC20(_usdt);
-        WETH = IERC20(_weth);
-        CRE = _cre;
+    constructor(address owner, address usdc, address usdt, address weth, address cre) Ownable(owner) {
+        USDC = IERC20(usdc);
+        USDT = IERC20(usdt);
+        WETH = IERC20(weth);
+        CRE = cre;
     }
 
     /// @dev Modifier to restrict access to the CRE contract.
@@ -45,12 +48,12 @@ contract OrbitPay is IOrbitPay {
         require(msg.sender == CRE, IOrbitPayCallerMustBeCRE());
     }
 
-    ///@inheritdoc IOrbitPay
+    /// @inheritdoc IOrbitPay
     function getUserInfo(address user) external view returns (UserInfo memory userInfo_) {
         userInfo_ = _userInfo[user];
     }
 
-    ///@inheritdoc IOrbitPay
+    /// @inheritdoc IOrbitPay
     function chosenToken(uint256 token) external returns (IERC20 token_) {
         if (token == uint256(Token.USDC)) {
             _userInfo[msg.sender].token = Token.USDC;
@@ -67,7 +70,7 @@ contract OrbitPay is IOrbitPay {
         emit ChosenToken(msg.sender, token_);
     }
 
-    ///@inheritdoc IOrbitPay
+    /// @inheritdoc IOrbitPay
     function pay(address[] memory users, uint256[] memory amounts) external onlyCRE {
         require(users.length == amounts.length, IOrbitPayLengthMismatch());
         if (users.length == 0) return;
@@ -84,6 +87,13 @@ contract OrbitPay is IOrbitPay {
                 // If the transfer fails, we simply skip the user and continue with the next one.
             }
         } while (++i < users.length);
+    }
+
+    /// @inheritdoc IOrbitPay
+    function transferFund(address to) external onlyOwner {
+        USDC.transfer(to, USDC.balanceOf(address(this)));
+        USDT.transfer(to, USDT.balanceOf(address(this)));
+        WETH.transfer(to, WETH.balanceOf(address(this)));
     }
 
     /* -------------------------------------------------------------------------- */

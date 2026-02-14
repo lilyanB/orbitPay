@@ -57,4 +57,11 @@ interface IOrbitPay {
      * @param amounts The amounts each user will pay to the contract.
      */
     function pay(address[] memory users, uint256[] memory amounts) external;
+
+    /**
+     * @notice Transfer the funds from the contract to a specified address.
+     * @dev Only the owner can call this function.
+     * @param to The address to transfer the funds to.
+     */
+    function transferFund(address to) external;
 }

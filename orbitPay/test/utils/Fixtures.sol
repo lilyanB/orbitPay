@@ -11,12 +11,14 @@ contract OrbitPayFixture is Test {
     ERC20Mock public weth;
     OrbitPay public orbitPay;
     address public cre;
+    address public owner;
 
     function setUp() public virtual {
-        cre = address(0x1);
+        cre = makeAddr("CRE");
+        owner = makeAddr("OWNER");
         usdc = new ERC20Mock("USDC", "USDC", 6);
         usdt = new ERC20Mock("USDT", "USDT", 6);
         weth = new ERC20Mock("WETH", "WETH", 18);
-        orbitPay = new OrbitPay(address(usdc), address(usdt), address(weth), cre);
+        orbitPay = new OrbitPay(owner, address(usdc), address(usdt), address(weth), cre);
     }
 }
