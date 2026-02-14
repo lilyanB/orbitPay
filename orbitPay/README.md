@@ -1,3 +1,15 @@
+# Info
+
+```
+forge script script/Mocks.s.sol:MocksScript --rpc-url https://ethereum-sepolia-rpc.publicnode.com --broadcast --private-key abc123...
+```
+
+```
+usdc_: contract IERC20 0x6e13B503bE2d289dfE762ef29A3b19377946236b
+usdt_: contract IERC20 0xd2ECba4dFaE14CcE2d2e767974C01532C1f7EA07
+weth_: contract IERC20 0x40e43BE2fEaf21cB459C4f493c14F0ad4A0E3451
+```
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
