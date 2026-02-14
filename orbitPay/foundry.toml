@@ -8,10 +8,14 @@ src = "src"
 out = "out"
 libs = ["dependencies"]
 # -------------------------------- Remappings -------------------------------- #
-remappings = ["forge-std/=dependencies/forge-std-1.14.0/src/"]
+remappings = [
+    "@openzeppelin-contracts-5/=dependencies/@openzeppelin-contracts-5.5.0/",
+    "forge-std/=dependencies/forge-std-1.14.0/src/",
+]
 
 [dependencies]
 forge-std = "1.14.0"
+"@openzeppelin-contracts" = "5.5.0"
 
 
 # ---------------------------------------------------------------------------- #
