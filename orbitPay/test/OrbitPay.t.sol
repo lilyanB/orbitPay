@@ -378,4 +378,105 @@ contract TestOrbitPay is OrbitPayFixture {
         vm.prank(cre);
         orbitPay.pay(users, amounts);
     }
+
+    /* -------------------------------------------------------------------------- */
+    /*                             transferFund                                   */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * @custom:scenario Test transferFund transfers all token balances
+     * @custom:when The owner calls transferFund with a recipient address
+     * @custom:then The transaction should succeed and all token balances should be transferred
+     * @custom:and The recipient should receive all tokens
+     * @custom:and The contract's token balances should become zero
+     */
+    function test_transferFund() public {
+        address recipient = address(0x5);
+        uint256 usdcAmount = 1000e6;
+        uint256 usdtAmount = 2000e6;
+        uint256 wethAmount = 500e18;
+
+        // Setup: mint tokens to contract
+        usdc.mint(address(orbitPay), usdcAmount);
+        usdt.mint(address(orbitPay), usdtAmount);
+        weth.mint(address(orbitPay), wethAmount);
+
+        uint256 recipientUsdcBefore = usdc.balanceOf(recipient);
+        uint256 recipientUsdtBefore = usdt.balanceOf(recipient);
+        uint256 recipientWethBefore = weth.balanceOf(recipient);
+
+        vm.prank(orbitPay.owner());
+        orbitPay.transferFund(recipient);
+
+        assertEq(usdc.balanceOf(recipient), recipientUsdcBefore + usdcAmount, "recipient received USDC");
+        assertEq(usdt.balanceOf(recipient), recipientUsdtBefore + usdtAmount, "recipient received USDT");
+        assertEq(weth.balanceOf(recipient), recipientWethBefore + wethAmount, "recipient received WETH");
+        assertEq(usdc.balanceOf(address(orbitPay)), 0, "contract USDC balance is zero");
+        assertEq(usdt.balanceOf(address(orbitPay)), 0, "contract USDT balance is zero");
+        assertEq(weth.balanceOf(address(orbitPay)), 0, "contract WETH balance is zero");
+    }
+
+    /**
+     * @custom:scenario Test transferFund with partial balances
+     * @custom:when The owner calls transferFund but only some tokens have balances
+     * @custom:then The transaction should succeed and only tokens with balances should be transferred
+     */
+    function test_transferFundPartialBalances() public {
+        address recipient = address(0x5);
+        uint256 usdcAmount = 500e6;
+
+        // Setup: mint only USDC to contract
+        usdc.mint(address(orbitPay), usdcAmount);
+
+        uint256 recipientUsdcBefore = usdc.balanceOf(recipient);
+        uint256 recipientUsdtBefore = usdt.balanceOf(recipient);
+        uint256 recipientWethBefore = weth.balanceOf(recipient);
+
+        vm.prank(orbitPay.owner());
+        orbitPay.transferFund(recipient);
+
+        assertEq(usdc.balanceOf(recipient), recipientUsdcBefore + usdcAmount, "recipient received USDC");
+        assertEq(usdt.balanceOf(recipient), recipientUsdtBefore, "recipient USDT balance unchanged");
+        assertEq(weth.balanceOf(recipient), recipientWethBefore, "recipient WETH balance unchanged");
+        assertEq(usdc.balanceOf(address(orbitPay)), 0, "contract USDC balance is zero");
+        assertEq(usdt.balanceOf(address(orbitPay)), 0, "contract USDT balance is zero");
+        assertEq(weth.balanceOf(address(orbitPay)), 0, "contract WETH balance is zero");
+    }
+
+    /**
+     * @custom:scenario Test revert when non-owner calls transferFund
+     * @custom:when A non-owner address calls transferFund
+     * @custom:then The transaction reverts with unauthorized error
+     */
+    function test_revertWhen_transferFundNotOwner() public {
+        address recipient = address(0x5);
+        usdc.mint(address(orbitPay), 1000e6);
+
+        vm.prank(user1);
+        vm.expectRevert();
+        orbitPay.transferFund(recipient);
+    }
+
+    /**
+     * @custom:scenario Test transferFund with empty contract balances
+     * @custom:when The owner calls transferFund but contract has no token balances
+     * @custom:then The transaction should succeed without transferring anything
+     */
+    function test_transferFundEmptyBalances() public {
+        address recipient = address(0x5);
+
+        uint256 recipientUsdcBefore = usdc.balanceOf(recipient);
+        uint256 recipientUsdtBefore = usdt.balanceOf(recipient);
+        uint256 recipientWethBefore = weth.balanceOf(recipient);
+
+        vm.prank(orbitPay.owner());
+        orbitPay.transferFund(recipient);
+
+        assertEq(usdc.balanceOf(recipient), recipientUsdcBefore, "recipient USDC balance unchanged");
+        assertEq(usdt.balanceOf(recipient), recipientUsdtBefore, "recipient USDT balance unchanged");
+        assertEq(weth.balanceOf(recipient), recipientWethBefore, "recipient WETH balance unchanged");
+        assertEq(usdc.balanceOf(address(orbitPay)), 0, "contract USDC balance is zero");
+        assertEq(usdt.balanceOf(address(orbitPay)), 0, "contract USDT balance is zero");
+        assertEq(weth.balanceOf(address(orbitPay)), 0, "contract WETH balance is zero");
+    }
 }
