@@ -5,7 +5,7 @@ import {IERC20} from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
 import {Ownable2Step} from "@openzeppelin-contracts-5/access/Ownable2Step.sol";
 import {Ownable} from "@openzeppelin-contracts-5/access/Ownable.sol";
 
-import {IOrbitPay} from "./IOrbitPay.sol";
+import {IOrbitPay} from "./interfaces/IOrbitPay.sol";
 
 contract OrbitPay is IOrbitPay, Ownable2Step {
     /// @notice The ERC20 token contracts for USDC.

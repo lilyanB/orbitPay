@@ -3,7 +3,8 @@ pragma solidity 0.8.28;
 
 import {OrbitPayFixture} from "./utils/Fixtures.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
-import {IOrbitPay} from "../src/IOrbitPay.sol";
+
+import {IOrbitPay} from "../src/interfaces/IOrbitPay.sol";
 
 /**
  * @custom:feature The core functionality of the `OrbitPay` contract
