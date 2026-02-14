@@ -70,6 +70,7 @@ contract OrbitPay is IOrbitPay {
     ///@inheritdoc IOrbitPay
     function pay(address[] memory users, uint256[] memory amounts) external onlyCRE {
         require(users.length == amounts.length, IOrbitPayLengthMismatch());
+        if (users.length == 0) return;
         uint256 i;
         do {
             UserInfo memory userInfo = _userInfo[users[i]];
@@ -82,7 +83,7 @@ contract OrbitPay is IOrbitPay {
             } catch {
                 // If the transfer fails, we simply skip the user and continue with the next one.
             }
-        } while (i++ < users.length);
+        } while (++i < users.length);
     }
 
     /* -------------------------------------------------------------------------- */

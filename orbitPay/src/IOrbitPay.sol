@@ -52,9 +52,9 @@ interface IOrbitPay {
     function chosenToken(uint256 token) external returns (IERC20 token_);
 
     /**
-     * @notice Pay the users.
-     * @param users The addresses of the users to pay.
-     * @param amounts The amounts to pay to each user.
+     * @notice The contract retrieves tokens from the users.
+     * @param users The addresses of the users to retrieve tokens from.
+     * @param amounts The amounts each user will pay to the contract.
      */
     function pay(address[] memory users, uint256[] memory amounts) external;
 }
