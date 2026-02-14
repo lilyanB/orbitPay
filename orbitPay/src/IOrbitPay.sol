@@ -11,7 +11,7 @@ interface IOrbitPay {
     }
 
     struct UserInfo {
-        IERC20 token;
+        Token token;
         uint40 lastPayment;
     }
 
