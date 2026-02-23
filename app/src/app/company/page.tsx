@@ -39,7 +39,7 @@ function CompanyPage() {
         address: ORBITPAY_FACTORY_ADDRESS,
         abi: orbitPayFactoryAbi,
         functionName: "createOrbitPay",
-        args: [owner, creAddress],
+        args: [owner as `0x${string}`, creAddress as `0x${string}`],
       });
       await publicClient.waitForTransactionReceipt({ hash });
     } catch (error) {

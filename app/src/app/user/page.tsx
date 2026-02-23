@@ -58,17 +58,18 @@ function UserPage() {
 
   const orbitPays = (orbitPayResults ?? [])
     .map((result) => result.result)
-    .filter((value): value is `0x${string}` => Boolean(value));
+    .filter(Boolean) as unknown as `0x${string}`[];
 
   const handleSubscribe = async (orbitPay: `0x${string}`) => {
     if (!isConnected || !address || !publicClient) return;
 
-    const tokenKey = tokenChoice[orbitPay] ?? "USDC";
+    const orbitPayKey = String(orbitPay);
+    const tokenKey = tokenChoice[orbitPayKey] ?? "USDC";
     const tokenMeta =
       tokenOptions.find((item) => item.value === tokenKey) ?? tokenOptions[0];
     const tokenAddress = TOKEN_ADDRESSES[tokenMeta.value];
 
-    setLoading((prev) => ({ ...prev, [orbitPay]: true }));
+    setLoading((prev) => ({ ...prev, [orbitPayKey]: true }));
     try {
       const chosenHash = await writeContractAsync({
         address: orbitPay,
@@ -88,7 +89,7 @@ function UserPage() {
     } catch (error) {
       console.error("Subscription error", error);
     } finally {
-      setLoading((prev) => ({ ...prev, [orbitPay]: false }));
+      setLoading((prev) => ({ ...prev, [orbitPayKey]: false }));
     }
   };
 
@@ -116,7 +117,7 @@ function UserPage() {
             <div className="panel">No OrbitPay deployed yet.</div>
           ) : (
             orbitPays.map((orbitPay) => {
-              const choice = tokenChoice[orbitPay] ?? "USDC";
+              const choice = tokenChoice[String(orbitPay)] ?? "USDC";
               return (
                 <div className="orbit-item" key={orbitPay}>
                   <div className="orbit-address">{orbitPay}</div>
@@ -128,7 +129,7 @@ function UserPage() {
                         onChange={(event) =>
                           setTokenChoice((prev) => ({
                             ...prev,
-                            [orbitPay]: event.target.value as TokenKey,
+                            [String(orbitPay)]: event.target.value as TokenKey,
                           }))
                         }
                       >
@@ -145,7 +146,7 @@ function UserPage() {
                         className="button"
                         type="button"
                         onClick={() => handleSubscribe(orbitPay)}
-                        disabled={!isConnected || loading[orbitPay]}
+                        disabled={!isConnected || loading[String(orbitPay)]}
                       >
                         {loading[orbitPay]
                           ? "Processing..."
