@@ -1,3 +1,11 @@
 {
-  "schedule": "*/30 * * * * *"
+  "schedule": "0 0 1 * *",
+  "mustPayUrl": "https://your-api.example.com/api/mustPay",
+  "evms": [
+    {
+      "chainName": "ethereum-testnet-sepolia",
+      "orbitPayAddress": "0x0000000000000000000000000000000000000000",
+      "gasLimit": "500000"
+    }
+  ]
 }
