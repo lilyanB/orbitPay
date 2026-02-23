@@ -4,6 +4,8 @@ pragma solidity 0.8.28;
 import {IOrbitPay} from "./IOrbitPay.sol";
 
 interface IOrbitPayFactory {
+    error IOrbitPayFactoryInvalidOrbitPayId();
+
     event CreatedOrbitPay(uint256 indexed orbitPayId, address indexed orbitPay);
 
     /**
@@ -22,8 +24,14 @@ interface IOrbitPayFactory {
     /**
      * @notice Creates a new OrbitPay contract.
      * @param owner The address of the owner of the OrbitPay contract.
-     * @param cre The address of the CRE contract from chainlink-cre-workflow.
      * @return orbitPay_ The address of the newly created OrbitPay contract.
      */
-    function createOrbitPay(address owner, address cre) external returns (IOrbitPay orbitPay_);
+    function createOrbitPay(address owner) external returns (IOrbitPay orbitPay_);
+
+    /**
+     * @notice Sets the CRE contract address in an existing OrbitPay contract.
+     * @param orbitPayId The ID of the OrbitPay contract.
+     * @param cre The address of the CRE contract.
+     */
+    function setCreInOrbitPay(uint256 orbitPayId, address cre) external;
 }

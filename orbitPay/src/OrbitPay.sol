@@ -18,7 +18,10 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
     IERC20 public immutable WETH;
 
     /// @notice The address of the CRE contract.
-    address public immutable CRE;
+    address public CRE;
+
+    /// @notice The address of the factory contract that created this OrbitPay contract.
+    address public immutable FACTORY;
 
     /// @dev Mapping to store the user info for each user.
     mapping(address => UserInfo) internal _userInfo;
@@ -28,13 +31,13 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
      * @param usdc The address of the USDC token contract.
      * @param usdt The address of the USDT token contract.
      * @param weth The address of the WETH token contract.
-     * @param cre The address of the CRE contract.
+     * @param factory The address of the factory contract that creates this OrbitPay contract.
      */
-    constructor(address owner, address usdc, address usdt, address weth, address cre) Ownable(owner) {
+    constructor(address owner, address usdc, address usdt, address weth, address factory) Ownable(owner) {
         USDC = IERC20(usdc);
         USDT = IERC20(usdt);
         WETH = IERC20(weth);
-        CRE = cre;
+        FACTORY = factory;
     }
 
     /// @dev Modifier to restrict access to the CRE contract.
@@ -51,6 +54,13 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
     /// @inheritdoc IOrbitPay
     function getUserInfo(address user) external view returns (UserInfo memory userInfo_) {
         userInfo_ = _userInfo[user];
+    }
+
+    /// @inheritdoc IOrbitPay
+    function setCRE(address newCre) external {
+        require(msg.sender == FACTORY, IOrbitPayCallerMustBeFactory());
+        require(CRE == address(0), IOrbitPayCREAlreadySet());
+        CRE = newCre;
     }
 
     /// @inheritdoc IOrbitPay

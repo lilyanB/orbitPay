@@ -25,6 +25,10 @@ interface IOrbitPay {
 
     error IOrbitPayLengthMismatch();
 
+    error IOrbitPayCREAlreadySet();
+
+    error IOrbitPayCallerMustBeFactory();
+
     /* -------------------------------------------------------------------------- */
     /*                                   Events                                   */
     /* -------------------------------------------------------------------------- */
@@ -43,6 +47,13 @@ interface IOrbitPay {
      * @return userInfo_ The user info of the user.
      */
     function getUserInfo(address user) external view returns (UserInfo memory userInfo_);
+
+    /**
+     * @notice Set the CRE contract address.
+     * @dev Only the owner can call this function and it can only be set once.
+     * @param newCre The address of the CRE contract.
+     */
+    function setCRE(address newCre) external;
 
     /**
      * @notice Choose the token to pay with.

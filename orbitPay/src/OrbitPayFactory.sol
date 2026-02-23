@@ -2,12 +2,14 @@
 pragma solidity 0.8.28;
 
 import {IERC20} from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
+import {Ownable2Step} from "@openzeppelin-contracts-5/access/Ownable2Step.sol";
+import {Ownable} from "@openzeppelin-contracts-5/access/Ownable.sol";
 
 import {OrbitPay} from "./OrbitPay.sol";
 import {IOrbitPay} from "./interfaces/IOrbitPay.sol";
 import {IOrbitPayFactory} from "./interfaces/IOrbitPayFactory.sol";
 
-contract OrbitPayFactory is IOrbitPayFactory {
+contract OrbitPayFactory is IOrbitPayFactory, Ownable2Step {
     /// @notice The ERC20 token contracts for USDC.
     IERC20 public immutable USDC;
 
@@ -24,11 +26,12 @@ contract OrbitPayFactory is IOrbitPayFactory {
     mapping(uint256 => address) internal _orbitPays;
 
     /**
+     * @param owner The address of the initial owner of the contract.
      * @param usdc The address of the USDC token contract.
      * @param usdt The address of the USDT token contract.
      * @param weth The address of the WETH token contract.
      */
-    constructor(address usdc, address usdt, address weth) {
+    constructor(address owner, address usdc, address usdt, address weth) Ownable(owner) {
         USDC = IERC20(usdc);
         USDT = IERC20(usdt);
         WETH = IERC20(weth);
@@ -45,10 +48,17 @@ contract OrbitPayFactory is IOrbitPayFactory {
     }
 
     /// @inheritdoc IOrbitPayFactory
-    function createOrbitPay(address owner, address cre) external returns (IOrbitPay orbitPay_) {
-        orbitPay_ = new OrbitPay(owner, address(USDC), address(USDT), address(WETH), cre);
+    function createOrbitPay(address owner) external returns (IOrbitPay orbitPay_) {
+        orbitPay_ = new OrbitPay(owner, address(USDC), address(USDT), address(WETH), address(this));
         _orbitPays[_orbitPayId] = address(orbitPay_);
         emit CreatedOrbitPay(_orbitPayId, address(orbitPay_));
         _orbitPayId++;
+    }
+
+    /// @inheritdoc IOrbitPayFactory
+    function setCreInOrbitPay(uint256 orbitPayId, address cre) external onlyOwner {
+        address orbitPayAddress = _orbitPays[orbitPayId];
+        require(orbitPayAddress != address(0), IOrbitPayFactoryInvalidOrbitPayId());
+        IOrbitPay(orbitPayAddress).setCRE(cre);
     }
 }
