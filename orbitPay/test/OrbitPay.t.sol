@@ -4,6 +4,7 @@ pragma solidity 0.8.28;
 import {OrbitPayFixture} from "./utils/Fixtures.sol";
 import {ERC20Mock} from "./mocks/ERC20Mock.sol";
 
+import {OrbitPay} from "../src/OrbitPay.sol";
 import {IOrbitPay} from "../src/interfaces/IOrbitPay.sol";
 
 /**
@@ -37,15 +38,17 @@ contract TestOrbitPay is OrbitPayFixture {
     /* -------------------------------------------------------------------------- */
 
     /**
-     * @custom:scenario Test immutable token addresses
+     * @custom:scenario Test immutable token and factory addresses
      * @custom:when The contract is deployed
      * @custom:then The immutable token addresses should be correctly set
-     * @custom:and The immutable CRE address should be correctly set
+     * @custom:and The immutable FACTORY address should be correctly set
+     * @custom:and The CRE address should be set after setCRE is called
      */
     function test_immutableAddresses() external view {
         assertEq(address(orbitPay.USDC()), address(usdc), "USDC address correct");
         assertEq(address(orbitPay.USDT()), address(usdt), "USDT address correct");
         assertEq(address(orbitPay.WETH()), address(weth), "WETH address correct");
+        assertEq(orbitPay.FACTORY(), factory, "FACTORY address correct");
         assertEq(orbitPay.CRE(), cre, "CRE address correct");
     }
 
@@ -63,6 +66,48 @@ contract TestOrbitPay is OrbitPayFixture {
 
         assertEq(uint256(userInfo.token), uint256(IOrbitPay.Token.USDC), "default token is USDC");
         assertEq(userInfo.lastPayment, 0, "default lastPayment is 0");
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                               setCRE                                       */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * @custom:scenario Test setCRE sets the CRE address
+     * @custom:when The factory calls setCRE on a fresh OrbitPay instance
+     * @custom:then The CRE address should be updated
+     */
+    function test_setCRE() public {
+        address newFactory = makeAddr("NEW_FACTORY");
+        address newCre = makeAddr("NEW_CRE");
+        OrbitPay freshOrbitPay = new OrbitPay(owner, address(usdc), address(usdt), address(weth), newFactory);
+
+        vm.prank(newFactory);
+        freshOrbitPay.setCRE(newCre);
+
+        assertEq(freshOrbitPay.CRE(), newCre, "CRE address set correctly");
+    }
+
+    /**
+     * @custom:scenario Test revert when non-factory address calls setCRE
+     * @custom:when A non-factory address calls setCRE
+     * @custom:then The transaction reverts with `IOrbitPayCallerMustBeFactory`
+     */
+    function test_revertWhen_setCRECallerNotFactory() public {
+        vm.prank(user1);
+        vm.expectRevert(IOrbitPay.IOrbitPayCallerMustBeFactory.selector);
+        orbitPay.setCRE(makeAddr("NEW_CRE"));
+    }
+
+    /**
+     * @custom:scenario Test revert when CRE is already set
+     * @custom:when The factory calls setCRE on an OrbitPay where CRE is already set
+     * @custom:then The transaction reverts with `IOrbitPayCREAlreadySet`
+     */
+    function test_revertWhen_setCREAlreadySet() public {
+        vm.prank(factory);
+        vm.expectRevert(IOrbitPay.IOrbitPayCREAlreadySet.selector);
+        orbitPay.setCRE(makeAddr("NEW_CRE"));
     }
 
     /* -------------------------------------------------------------------------- */

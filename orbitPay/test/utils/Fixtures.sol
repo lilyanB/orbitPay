@@ -12,13 +12,17 @@ contract OrbitPayFixture is Test {
     OrbitPay public orbitPay;
     address public cre;
     address public owner;
+    address public factory;
 
     function setUp() public virtual {
         cre = makeAddr("CRE");
         owner = makeAddr("OWNER");
+        factory = makeAddr("FACTORY");
         usdc = new ERC20Mock("USDC", "USDC", 6);
         usdt = new ERC20Mock("USDT", "USDT", 6);
         weth = new ERC20Mock("WETH", "WETH", 18);
-        orbitPay = new OrbitPay(owner, address(usdc), address(usdt), address(weth), cre);
+        orbitPay = new OrbitPay(owner, address(usdc), address(usdt), address(weth), factory);
+        vm.prank(factory);
+        orbitPay.setCRE(cre);
     }
 }
