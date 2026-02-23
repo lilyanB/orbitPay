@@ -2,6 +2,7 @@
 
 ```bash
 cre workflow simulate my-calculator-workflow --target staging-settings --broadcast
+cre workflow simulate orbitPay --target staging-settings --broadcast
 ```
 
 endpoint for weth price:
