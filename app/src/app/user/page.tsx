@@ -60,6 +60,38 @@ function UserPage() {
     .map((result) => result.result)
     .filter(Boolean) as unknown as `0x${string}`[];
 
+  // Read user info for each OrbitPay
+  const { data: userInfoResults } = useReadContracts({
+    contracts: orbitPays.map((orbitPay) => ({
+      address: orbitPay,
+      abi: orbitPayAbi,
+      functionName: "getUserInfo",
+      args: address ? [address] : undefined,
+    })),
+    allowFailure: true,
+    query: {
+      enabled: isConnected && orbitPays.length > 0,
+    },
+  });
+
+  // Read allowances for each OrbitPay - check all tokens
+  const { data: allowanceResults } = useReadContracts({
+    contracts: orbitPays.flatMap((orbitPay) => {
+      if (!address) return [];
+
+      return Object.values(TOKEN_ADDRESSES).map((tokenAddress) => ({
+        address: tokenAddress as `0x${string}`,
+        abi: erc20Abi,
+        functionName: "allowance",
+        args: [address, orbitPay],
+      }));
+    }),
+    allowFailure: true,
+    query: {
+      enabled: isConnected && orbitPays.length > 0,
+    },
+  });
+
   const handleSubscribe = async (orbitPay: `0x${string}`) => {
     if (!isConnected || !address || !publicClient) return;
 
@@ -116,46 +148,94 @@ function UserPage() {
           {orbitPays.length === 0 ? (
             <div className="panel">No OrbitPay deployed yet.</div>
           ) : (
-            orbitPays.map((orbitPay) => {
+            orbitPays.map((orbitPay, index) => {
               const choice = tokenChoice[String(orbitPay)] ?? "USDC";
+              const userInfo = userInfoResults?.[index]?.result as
+                | { token: number; lastPayment: bigint }
+                | undefined;
+
+              // Check allowances for all tokens
+              const tokenKeys = Object.keys(TOKEN_ADDRESSES) as TokenKey[];
+              const orbitPayAllowances = tokenKeys.map((_, tokenIndex) => {
+                const allowanceIndex = index * tokenKeys.length + tokenIndex;
+                return allowanceResults?.[allowanceIndex]?.result as
+                  | bigint
+                  | undefined;
+              });
+
+              // Find if user has approved any token
+              let subscribedTokenKey: TokenKey | null = null;
+              let hasApproved = false;
+
+              for (let i = 0; i < orbitPayAllowances.length; i++) {
+                if (orbitPayAllowances[i] && orbitPayAllowances[i]! > 0n) {
+                  subscribedTokenKey = tokenKeys[i];
+                  hasApproved = true;
+                  break;
+                }
+              }
+
+              const hasSubscribed = subscribedTokenKey !== null;
+
               return (
                 <div className="orbit-item" key={orbitPay}>
                   <div className="orbit-address">{orbitPay}</div>
-                  <div className="grid two">
-                    <div>
-                      <div className="label">Payment token</div>
-                      <select
-                        value={choice}
-                        onChange={(event) =>
-                          setTokenChoice((prev) => ({
-                            ...prev,
-                            [String(orbitPay)]: event.target.value as TokenKey,
-                          }))
-                        }
-                      >
-                        {tokenOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
+
+                  {hasSubscribed ? (
+                    <div className="grid two">
+                      <div>
+                        <div className="label">Subscribed with</div>
+                        <div className="token-display">
+                          ✓ {subscribedTokenKey}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="label">Approval status</div>
+                        <div className="token-display">
+                          {hasApproved ? "✓ Approved (max)" : "Not approved"}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="label">Action</div>
-                      <button
-                        className="button"
-                        type="button"
-                        onClick={() => handleSubscribe(orbitPay)}
-                        disabled={!isConnected || loading[String(orbitPay)]}
-                      >
-                        {loading[orbitPay]
-                          ? "Processing..."
-                          : "Subscribe + Approve max"}
-                      </button>
-                    </div>
-                  </div>
-                  {!isConnected && (
-                    <span className="badge">Connect your wallet</span>
+                  ) : (
+                    <>
+                      <div className="grid two">
+                        <div>
+                          <div className="label">Payment token</div>
+                          <select
+                            value={choice}
+                            onChange={(event) =>
+                              setTokenChoice((prev) => ({
+                                ...prev,
+                                [String(orbitPay)]: event.target
+                                  .value as TokenKey,
+                              }))
+                            }
+                          >
+                            {tokenOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <div className="label">Action</div>
+                          <button
+                            className="button"
+                            type="button"
+                            onClick={() => handleSubscribe(orbitPay)}
+                            disabled={!isConnected || loading[String(orbitPay)]}
+                          >
+                            {loading[orbitPay]
+                              ? "Processing..."
+                              : "Subscribe + Approve max"}
+                          </button>
+                        </div>
+                      </div>
+                      {!isConnected && (
+                        <span className="badge">Connect your wallet</span>
+                      )}
+                    </>
                   )}
                 </div>
               );

@@ -42,6 +42,22 @@ export const orbitPayAbi = [
     inputs: [{ name: "token", type: "uint256" }],
     outputs: [{ name: "token_", type: "address" }],
   },
+  {
+    type: "function",
+    name: "getUserInfo",
+    stateMutability: "view",
+    inputs: [{ name: "user", type: "address" }],
+    outputs: [
+      {
+        name: "userInfo_",
+        type: "tuple",
+        components: [
+          { name: "token", type: "uint8" },
+          { name: "lastPayment", type: "uint40" },
+        ],
+      },
+    ],
+  },
 ] as const;
 
 export const erc20Abi = [
@@ -54,5 +70,15 @@ export const erc20Abi = [
       { name: "amount", type: "uint256" },
     ],
     outputs: [{ name: "success", type: "bool" }],
+  },
+  {
+    type: "function",
+    name: "allowance",
+    stateMutability: "view",
+    inputs: [
+      { name: "owner", type: "address" },
+      { name: "spender", type: "address" },
+    ],
+    outputs: [{ name: "remaining", type: "uint256" }],
   },
 ] as const;
