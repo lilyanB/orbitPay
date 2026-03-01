@@ -33,6 +33,14 @@ contract TestOrbitPay is OrbitPayFixture {
         weth.mint(user3, INITIAL_BALANCE);
     }
 
+    /**
+     * @dev Helper function to call onReport with encoded data
+     */
+    function _callOnReport(address[] memory users, uint256[] memory amounts) internal {
+        bytes memory data = abi.encode(users, amounts);
+        orbitPay.onReport(bytes32(0), data);
+    }
+
     /* -------------------------------------------------------------------------- */
     /*                               Constructor                                  */
     /* -------------------------------------------------------------------------- */
@@ -247,7 +255,7 @@ contract TestOrbitPay is OrbitPayFixture {
         vm.expectEmit();
         emit IOrbitPay.Paid(user1, payAmount, usdc);
         vm.prank(cre);
-        orbitPay.pay(users, amounts);
+        _callOnReport(users, amounts);
 
         uint256 userBalanceAfter = usdc.balanceOf(user1);
         uint256 contractBalanceAfter = usdc.balanceOf(address(orbitPay));
@@ -309,7 +317,7 @@ contract TestOrbitPay is OrbitPayFixture {
         emit IOrbitPay.Paid(user3, payAmount3, weth);
 
         vm.prank(cre);
-        orbitPay.pay(users, amounts);
+        _callOnReport(users, amounts);
 
         IOrbitPay.UserInfo memory userInfo1 = orbitPay.getUserInfo(user1);
         IOrbitPay.UserInfo memory userInfo2 = orbitPay.getUserInfo(user2);
@@ -362,7 +370,7 @@ contract TestOrbitPay is OrbitPayFixture {
 
         // This should not revert despite user2's transfer failing
         vm.prank(cre);
-        orbitPay.pay(users, amounts);
+        _callOnReport(users, amounts);
 
         IOrbitPay.UserInfo memory userInfo1 = orbitPay.getUserInfo(user1);
         IOrbitPay.UserInfo memory userInfo2 = orbitPay.getUserInfo(user2);
@@ -393,7 +401,7 @@ contract TestOrbitPay is OrbitPayFixture {
 
         vm.prank(cre);
         vm.expectRevert(IOrbitPay.IOrbitPayLengthMismatch.selector);
-        orbitPay.pay(users, amounts);
+        _callOnReport(users, amounts);
     }
 
     /**
@@ -409,7 +417,7 @@ contract TestOrbitPay is OrbitPayFixture {
 
         vm.prank(user1);
         vm.expectRevert(IOrbitPay.IOrbitPayCallerMustBeCRE.selector);
-        orbitPay.pay(users, amounts);
+        _callOnReport(users, amounts);
     }
 
     /**
@@ -422,7 +430,7 @@ contract TestOrbitPay is OrbitPayFixture {
         uint256[] memory amounts = new uint256[](0);
 
         vm.prank(cre);
-        orbitPay.pay(users, amounts);
+        _callOnReport(users, amounts);
     }
 
     /* -------------------------------------------------------------------------- */

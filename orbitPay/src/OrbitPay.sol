@@ -81,7 +81,38 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
     }
 
     /// @inheritdoc IOrbitPay
-    function pay(address[] memory users, uint256[] memory amounts) external onlyCRE {
+    function onReport(
+        bytes32,
+        /* workflowExecutionId */
+        bytes calldata data
+    )
+        external
+        onlyCRE
+    {
+        // Decode the data to extract users and amounts arrays
+        (address[] memory users, uint256[] memory amounts) = abi.decode(data, (address[], uint256[]));
+
+        // Call the internal pay function with the decoded data
+        _pay(users, amounts);
+    }
+
+    /// @inheritdoc IOrbitPay
+    function transferFund(address to) external onlyOwner {
+        USDC.transfer(to, USDC.balanceOf(address(this)));
+        USDT.transfer(to, USDT.balanceOf(address(this)));
+        WETH.transfer(to, WETH.balanceOf(address(this)));
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /*                                  Internal                                  */
+    /* -------------------------------------------------------------------------- */
+
+    /**
+     * @notice Internal function to process payments from users.
+     * @param users The addresses of the users to retrieve tokens from.
+     * @param amounts The amounts each user will pay to the contract.
+     */
+    function _pay(address[] memory users, uint256[] memory amounts) internal {
         require(users.length == amounts.length, IOrbitPayLengthMismatch());
         if (users.length == 0) return;
         uint256 i;
@@ -98,17 +129,6 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
             }
         } while (++i < users.length);
     }
-
-    /// @inheritdoc IOrbitPay
-    function transferFund(address to) external onlyOwner {
-        USDC.transfer(to, USDC.balanceOf(address(this)));
-        USDT.transfer(to, USDT.balanceOf(address(this)));
-        WETH.transfer(to, WETH.balanceOf(address(this)));
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                                  Internal                                  */
-    /* -------------------------------------------------------------------------- */
 
     /**
      * @notice Get the ERC20 token contract for a given Token enum.

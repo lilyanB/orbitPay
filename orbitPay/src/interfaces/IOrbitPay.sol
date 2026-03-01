@@ -63,11 +63,12 @@ interface IOrbitPay {
     function chosenToken(uint256 token) external returns (IERC20 token_);
 
     /**
-     * @notice The contract retrieves tokens from the users.
-     * @param users The addresses of the users to retrieve tokens from.
-     * @param amounts The amounts each user will pay to the contract.
+     * @notice Callback function called by the CRE contract.
+     * @dev Only the CRE can call this function.
+     * @param workflowExecutionId The execution ID from the CRE workflow.
+     * @param data The encoded data containing users and amounts arrays.
      */
-    function pay(address[] memory users, uint256[] memory amounts) external;
+    function onReport(bytes32 workflowExecutionId, bytes calldata data) external;
 
     /**
      * @notice Transfer the funds from the contract to a specified address.
