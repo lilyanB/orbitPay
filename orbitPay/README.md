@@ -5,9 +5,9 @@ forge script script/Mocks.s.sol:MocksScript --rpc-url https://ethereum-sepolia-r
 ```
 
 ```
-usdc_: contract IERC20 0x6e13B503bE2d289dfE762ef29A3b19377946236b
-usdt_: contract IERC20 0xd2ECba4dFaE14CcE2d2e767974C01532C1f7EA07
-weth_: contract IERC20 0x40e43BE2fEaf21cB459C4f493c14F0ad4A0E3451
+usdc_: contract IERC20 0x23a0485b021CA24efde51114823FDbA761359780
+usdt_: contract IERC20 0xa0a5a661f7fad0E1F5B5a9C479de51eEEf4D1223
+weth_: contract IERC20 0x260B90dFf3F586B1141790a212D7437D5521d5B8
 ```
 
 ```
@@ -15,7 +15,13 @@ forge script script/OrbitPayFactory.s.sol:OrbitPayFactoryScript 0x607A577659Cad2
 ```
 
 ```
-orbitPayFactory_: contract OrbitPayFactory 0x587E2391e256740c664DF657653Cb80dc0426034
+orbitPayFactory_: contract OrbitPayFactory 0x06FC05829dfA3667f3089DFe9CF0e7d9D4e7C8C4
+```
+
+Set the CRE in deployed orbitPay:
+
+```
+cast send 0x06FC05829dfA3667f3089DFe9CF0e7d9D4e7C8C4 "setCreInOrbitPay(uint256,address)" 0 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 --rpc-url https://ethereum-sepolia-rpc.publicnode.com --private-key abc123...
 ```
 
 https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
