@@ -1,10 +1,14 @@
 export const OrbitPay = [
   {
     inputs: [
-      { internalType: "address[]", name: "users", type: "address[]" },
-      { internalType: "uint256[]", name: "amounts", type: "uint256[]" },
+      {
+        internalType: "bytes32",
+        name: "workflowExecutionId",
+        type: "bytes32",
+      },
+      { internalType: "bytes", name: "data", type: "bytes" },
     ],
-    name: "pay",
+    name: "onReport",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

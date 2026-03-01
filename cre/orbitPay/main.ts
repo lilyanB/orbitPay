@@ -12,8 +12,7 @@ import {
   hexToBase64,
   json,
 } from "@chainlink/cre-sdk";
-import { encodeFunctionData } from "viem";
-import { OrbitPay } from "../contracts/abi";
+import { encodeAbiParameters, parseAbiParameters } from "viem";
 
 type EvmConfig = {
   chainName: string;
@@ -118,15 +117,14 @@ const submitBatch = (
   users: `0x${string}`[],
   amounts: bigint[],
 ): string => {
-  const callData = encodeFunctionData({
-    abi: OrbitPay,
-    functionName: "pay",
-    args: [users, amounts],
-  });
+  const reportData = encodeAbiParameters(
+    parseAbiParameters("address[] users, uint256[] amounts"),
+    [users, amounts],
+  );
 
   const report = runtime
     .report({
-      encodedPayload: hexToBase64(callData),
+      encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
       signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
