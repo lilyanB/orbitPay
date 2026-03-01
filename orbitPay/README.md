@@ -20,6 +20,12 @@ orbitPayFactory_: contract OrbitPayFactory 0xb13d776541cbb3694B4E10b9122Eb9F6A90
 
 https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
 
+Check userInfo:
+
+```
+cast call 0xe48F544178a7e9027773912Bd2960aD631Efe74d "getUserInfo(address)" 0x607A577659Cad2A2799120DfdEEde39De2D38706 --rpc-url https://ethereum-sepolia-rpc.publicnode.com
+```
+
 ## Anvil
 
 Public Key

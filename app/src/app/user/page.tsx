@@ -163,19 +163,23 @@ function UserPage() {
                   | undefined;
               });
 
-              // Find if user has approved any token
+              // Determine subscription status based on userInfo and allowance
               let subscribedTokenKey: TokenKey | null = null;
               let hasApproved = false;
 
-              for (let i = 0; i < orbitPayAllowances.length; i++) {
-                if (orbitPayAllowances[i] && orbitPayAllowances[i]! > 0n) {
-                  subscribedTokenKey = tokenKeys[i];
-                  hasApproved = true;
-                  break;
-                }
+              if (userInfo) {
+                // Get the token selected by the user (0=USDC, 1=USDT, 2=WETH)
+                const selectedTokenIndex = Number(userInfo.token);
+                subscribedTokenKey = tokenKeys[selectedTokenIndex];
+
+                // Check if the selected token has allowance > 0
+                const selectedAllowance =
+                  orbitPayAllowances[selectedTokenIndex];
+                hasApproved =
+                  selectedAllowance !== undefined && selectedAllowance > 0n;
               }
 
-              const hasSubscribed = subscribedTokenKey !== null;
+              const hasSubscribed = subscribedTokenKey !== null && hasApproved;
 
               return (
                 <div className="orbit-item" key={orbitPay}>
@@ -243,7 +247,7 @@ function UserPage() {
           )}
         </div>
         <p className="footer-note">
-          The subscription stores your token via `chosenToken` and approves the
+          The subscription stores your token via `selectToken` and approves the
           contract for recurring payments.
         </p>
       </section>
