@@ -3,7 +3,7 @@
   "mustPayUrl": "https://orbit-pay-phi.vercel.app/api/mustPay",
   "evms": [
     {
-      "orbitPayAddress": "0xE5aB70535F7AEf1292472eFD143f2b81A6390581",
+      "orbitPayAddress": "0x99b38cdb32f9cf6ba1129e8eb08bc1f6557753bf",
       "chainName": "ethereum-testnet-sepolia",
       "gasLimit": "500000"
     }
