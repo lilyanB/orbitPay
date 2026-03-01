@@ -1,10 +1,10 @@
 {
-  "schedule": "0 0 1 * *",
-  "mustPayUrl": "https://your-api.example.com/api/mustPay",
+  "schedule": "*/30 * * * * *",
+  "mustPayUrl": "https://orbit-pay-phi.vercel.app/api/mustPay",
   "evms": [
     {
-      "chainName": "ethereum-mainnet",
       "orbitPayAddress": "0x0000000000000000000000000000000000000000",
+      "chainName": "ethereum-testnet-sepolia",
       "gasLimit": "500000"
     }
   ]

@@ -5,6 +5,10 @@ cre workflow simulate my-calculator-workflow --target staging-settings --broadca
 cre workflow simulate orbitPay --target staging-settings --broadcast
 ```
 
+```bash
+cre workflow simulate orbitPay --target staging-settings
+```
+
 endpoint for weth price:
 
 ```

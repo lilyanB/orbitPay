@@ -1,13 +1,9 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { mainnet, sepolia } from "wagmi/chains";
+import { sepolia } from "wagmi/chains";
 
 export const config = getDefaultConfig({
-  appName: "RainbowKit demo",
-  projectId: "YOUR_PROJECT_ID",
-  chains: [
-    mainnet,
-    sepolia,
-    ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === "true" ? [sepolia] : []),
-  ],
+  appName: "orbitPay",
+  projectId: "649dca8840ff87c9f048b2666a4cbf87",
+  chains: [sepolia],
   ssr: true,
 });
