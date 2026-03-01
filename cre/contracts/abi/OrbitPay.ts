@@ -1,12 +1,8 @@
 export const OrbitPay = [
   {
     inputs: [
-      {
-        internalType: "bytes32",
-        name: "workflowExecutionId",
-        type: "bytes32",
-      },
-      { internalType: "bytes", name: "data", type: "bytes" },
+      { internalType: "bytes", name: "metadata", type: "bytes" },
+      { internalType: "bytes", name: "report", type: "bytes" },
     ],
     name: "onReport",
     outputs: [],

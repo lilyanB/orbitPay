@@ -1,54 +1,44 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import {IERC20} from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
-import {Ownable2Step} from "@openzeppelin-contracts-5/access/Ownable2Step.sol";
-import {Ownable} from "@openzeppelin-contracts-5/access/Ownable.sol";
+import { IERC20 } from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin-contracts-5/token/ERC20/utils/SafeERC20.sol";
+import { IERC165 } from "@openzeppelin-contracts-5/utils/introspection/IERC165.sol";
 
-import {IOrbitPay} from "./interfaces/IOrbitPay.sol";
+import { ReceiverTemplate } from "./ReceiverTemplate.sol";
+import { IOrbitPay } from "./interfaces/IOrbitPay.sol";
 
-contract OrbitPay is IOrbitPay, Ownable2Step {
-    /// @notice The ERC20 token contracts for USDC.
+/**
+ * @title OrbitPay
+ * @notice Handles automated ERC20 batch payments triggered by CRE reports.
+ */
+contract OrbitPay is IOrbitPay, ReceiverTemplate {
+    using SafeERC20 for IERC20;
+
     IERC20 public immutable USDC;
-
-    /// @notice The ERC20 token contracts for USDT.
     IERC20 public immutable USDT;
-
-    /// @notice The ERC20 token contracts for WETH.
     IERC20 public immutable WETH;
 
-    /// @notice The address of the CRE contract.
-    address public CRE;
-
-    /// @notice The address of the factory contract that created this OrbitPay contract.
     address public immutable FACTORY;
 
-    /// @dev Mapping to store the user info for each user.
     mapping(address => UserInfo) internal _userInfo;
 
-    /**
-     * @param owner The address of the initial owner of the contract.
-     * @param usdc The address of the USDC token contract.
-     * @param usdt The address of the USDT token contract.
-     * @param weth The address of the WETH token contract.
-     * @param factory The address of the factory contract that creates this OrbitPay contract.
-     */
-    constructor(address owner, address usdc, address usdt, address weth, address factory) Ownable(owner) {
+    constructor(address owner, address usdc, address usdt, address weth, address factory)
+        ReceiverTemplate(owner, factory)
+    {
         USDC = IERC20(usdc);
         USDT = IERC20(usdt);
         WETH = IERC20(weth);
         FACTORY = factory;
     }
 
-    /// @dev Modifier to restrict access to the CRE contract.
-    modifier onlyCRE() {
-        _checkCRE();
-        _;
-    }
+    /* -------------------------------------------------------------------------- */
+    /*                                   Getters                                  */
+    /* -------------------------------------------------------------------------- */
 
-    /// @dev Check if the caller is the CRE contract.
-    function _checkCRE() internal view {
-        require(msg.sender == CRE, IOrbitPayCallerMustBeCRE());
+    /// @inheritdoc IOrbitPay
+    function getCRE() external view returns (address cre_) {
+        cre_ = getForwarderAddress();
     }
 
     /// @inheritdoc IOrbitPay
@@ -56,15 +46,19 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
         userInfo_ = _userInfo[user];
     }
 
+    /* -------------------------------------------------------------------------- */
+    /*                             External Functions                             */
+    /* -------------------------------------------------------------------------- */
+
     /// @inheritdoc IOrbitPay
     function setCRE(address newCre) external {
         require(msg.sender == FACTORY, IOrbitPayCallerMustBeFactory());
-        require(CRE == address(0), IOrbitPayCREAlreadySet());
-        CRE = newCre;
+        require(getForwarderAddress() == FACTORY, IOrbitPayCREAlreadySet());
+        _setForwarderAddress(newCre);
     }
 
     /// @inheritdoc IOrbitPay
-    function chosenToken(uint256 token) external returns (IERC20 token_) {
+    function selectToken(uint256 token) external returns (IERC20 token_) {
         if (token == uint256(Token.USDC)) {
             _userInfo[msg.sender].token = Token.USDC;
             token_ = USDC;
@@ -77,44 +71,53 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
         } else {
             revert IOrbitPayInvalidToken();
         }
+
         emit ChosenToken(msg.sender, token_);
     }
 
     /// @inheritdoc IOrbitPay
-    function onReport(
-        bytes32,
-        /* workflowExecutionId */
-        bytes calldata data
-    )
-        external
-        onlyCRE
-    {
-        // Decode the data to extract users and amounts arrays
-        (address[] memory users, uint256[] memory amounts) = abi.decode(data, (address[], uint256[]));
-
-        // Call the internal pay function with the decoded data
-        _pay(users, amounts);
+    function onReport(bytes calldata metadata, bytes calldata report) public override(IOrbitPay, ReceiverTemplate) {
+        if (msg.sender != getForwarderAddress()) {
+            revert IOrbitPayCallerMustBeCRE();
+        }
+        super.onReport(metadata, report);
     }
+
+    /* -------------------------------------------------------------------------- */
+    /*                              Owner Functions                               */
+    /* -------------------------------------------------------------------------- */
 
     /// @inheritdoc IOrbitPay
     function transferFund(address to) external onlyOwner {
-        USDC.transfer(to, USDC.balanceOf(address(this)));
-        USDT.transfer(to, USDT.balanceOf(address(this)));
-        WETH.transfer(to, WETH.balanceOf(address(this)));
+        USDC.safeTransfer(to, USDC.balanceOf(address(this)));
+        USDT.safeTransfer(to, USDT.balanceOf(address(this)));
+        WETH.safeTransfer(to, WETH.balanceOf(address(this)));
     }
 
     /* -------------------------------------------------------------------------- */
-    /*                                  Internal                                  */
+    /*                             Internal Functions                             */
     /* -------------------------------------------------------------------------- */
 
     /**
-     * @notice Internal function to process payments from users.
-     * @param users The addresses of the users to retrieve tokens from.
-     * @param amounts The amounts each user will pay to the contract.
+     * @notice Decodes and processes the report payload from the CRE forwarder.
+     * @param report The ABI-encoded users and amounts arrays.
+     */
+    function _processReport(bytes calldata report) internal override {
+        (address[] memory users, uint256[] memory amounts) = abi.decode(report, (address[], uint256[]));
+        _pay(users, amounts);
+    }
+
+    /**
+     * @notice Processes batch payments by collecting tokens from each user.
+     * @dev Raw `transferFrom` is used inside the `try` expression because `SafeERC20.safeTransferFrom`
+     * is a library function and cannot be called in a `try` statement. Failed transfers are silently skipped.
+     * @param users The list of user addresses to charge.
+     * @param amounts The list of amounts to collect from each user.
      */
     function _pay(address[] memory users, uint256[] memory amounts) internal {
         require(users.length == amounts.length, IOrbitPayLengthMismatch());
         if (users.length == 0) return;
+
         uint256 i;
         do {
             UserInfo memory userInfo = _userInfo[users[i]];
@@ -124,16 +127,14 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
                     _userInfo[users[i]].lastPayment = uint40(block.timestamp);
                     emit Paid(users[i], amounts[i], tokenToUse);
                 }
-            } catch {
-                // If the transfer fails, we simply skip the user and continue with the next one.
-            }
+            } catch {}
         } while (++i < users.length);
     }
 
     /**
-     * @notice Get the ERC20 token contract for a given Token enum.
-     * @param token The Token enum value.
-     * @return token_ The corresponding ERC20 token contract.
+     * @notice Returns the token contract for a given Token enum value.
+     * @param token The token enum value.
+     * @return token_ The corresponding IERC20 token contract.
      */
     function _getToken(Token token) internal view returns (IERC20 token_) {
         if (token == Token.USDC) {
@@ -143,5 +144,10 @@ contract OrbitPay is IOrbitPay, Ownable2Step {
         } else {
             token_ = WETH;
         }
+    }
+
+    /// @inheritdoc IERC165
+    function supportsInterface(bytes4 interfaceId) public view override(ReceiverTemplate, IERC165) returns (bool) {
+        return interfaceId == type(IOrbitPay).interfaceId || super.supportsInterface(interfaceId);
     }
 }

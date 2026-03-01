@@ -38,7 +38,7 @@ contract TestOrbitPay is OrbitPayFixture {
      */
     function _callOnReport(address[] memory users, uint256[] memory amounts) internal {
         bytes memory data = abi.encode(users, amounts);
-        orbitPay.onReport(bytes32(0), data);
+        orbitPay.onReport("", data);
     }
 
     /* -------------------------------------------------------------------------- */
