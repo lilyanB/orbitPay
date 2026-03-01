@@ -15,13 +15,13 @@ forge script script/OrbitPayFactory.s.sol:OrbitPayFactoryScript 0x607A577659Cad2
 ```
 
 ```
-orbitPayFactory_: contract OrbitPayFactory 0x657f47891a07eAef7fb6C846ACee89CA871fb845
+orbitPayFactory_: contract OrbitPayFactory 0x0c89Ef954f06D6Af5FB5D953ABE5968E50a37F35
 ```
 
 Set the CRE in deployed orbitPay:
 
 ```
-cast send 0x657f47891a07eAef7fb6C846ACee89CA871fb845 "setCreInOrbitPay(uint256,address)" 0 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 --rpc-url https://ethereum-sepolia-rpc.publicnode.com --private-key abc123...
+cast send 0x0c89Ef954f06D6Af5FB5D953ABE5968E50a37F35 "setCreInOrbitPay(uint256,address)" 0 0x15fC6ae953E024d975e77382eEeC56A9101f9F88 --rpc-url https://ethereum-sepolia-rpc.publicnode.com --private-key abc123...
 ```
 
 https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
