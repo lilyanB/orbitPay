@@ -34,7 +34,7 @@ export const orbitPayFactoryAbi = [
 export const orbitPayAbi = [
   {
     type: "function",
-    name: "chosenToken",
+    name: "selectToken",
     stateMutability: "nonpayable",
     inputs: [{ name: "token", type: "uint256" }],
     outputs: [{ name: "token_", type: "address" }],

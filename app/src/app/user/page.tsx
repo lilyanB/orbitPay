@@ -106,7 +106,7 @@ function UserPage() {
       const chosenHash = await writeContractAsync({
         address: orbitPay,
         abi: orbitPayAbi,
-        functionName: "chosenToken",
+        functionName: "selectToken",
         args: [tokenMeta.id],
       });
       await publicClient.waitForTransactionReceipt({ hash: chosenHash });
