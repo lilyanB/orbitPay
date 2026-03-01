@@ -21,8 +21,6 @@ contract OrbitPayFixture is Test {
         usdc = new ERC20Mock("USDC", "USDC", 6);
         usdt = new ERC20Mock("USDT", "USDT", 6);
         weth = new ERC20Mock("WETH", "WETH", 18);
-        orbitPay = new OrbitPay(owner, address(usdc), address(usdt), address(weth), factory);
-        vm.prank(factory);
-        orbitPay.setCRE(cre);
+        orbitPay = new OrbitPay(owner, address(usdc), address(usdt), address(weth), factory, cre);
     }
 }

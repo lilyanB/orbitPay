@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.0;
 
-import { IERC20 } from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
-import { IERC165 } from "@openzeppelin-contracts-5/utils/introspection/IERC165.sol";
+import {IERC20} from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
+import {IERC165} from "@openzeppelin-contracts-5/utils/introspection/IERC165.sol";
 
 /**
  * @title IOrbitPay
@@ -48,7 +48,7 @@ interface IOrbitPay is IERC165 {
      * @param user The address of the user.
      * @param token The selected token contract.
      */
-    event ChosenToken(address indexed user, IERC20 token);
+    event SelectToken(address indexed user, IERC20 token);
 
     /**
      * @notice Emitted when a user is successfully charged.
@@ -87,12 +87,6 @@ interface IOrbitPay is IERC165 {
     function FACTORY() external view returns (address factory_);
 
     /**
-     * @notice Get the CRE/forwarder contract address.
-     * @return cre_ The address of the CRE forwarder contract.
-     */
-    function getCRE() external view returns (address cre_);
-
-    /**
      * @notice Get the user info of a user.
      * @param user The address of the user.
      * @return userInfo_ The user info of the user.
@@ -100,26 +94,11 @@ interface IOrbitPay is IERC165 {
     function getUserInfo(address user) external view returns (UserInfo memory userInfo_);
 
     /**
-     * @notice Set the CRE/forwarder contract address.
-     * @dev Only the factory can call this function once for bootstrap compatibility.
-     * @param newCre The address of the CRE forwarder contract.
-     */
-    function setCRE(address newCre) external;
-
-    /**
      * @notice Select the token to use for payments.
      * @param token The token index. 0 for USDC, 1 for USDT, 2 for WETH.
      * @return token_ The selected token contract.
      */
     function selectToken(uint256 token) external returns (IERC20 token_);
-
-    /**
-     * @notice Callback function called by the CRE contract with a payment report.
-     * @dev Only the CRE forwarder can call this function.
-     * @param metadata The metadata encoded by the forwarder.
-     * @param report The encoded data containing users and amounts arrays.
-     */
-    function onReport(bytes calldata metadata, bytes calldata report) external;
 
     /**
      * @notice Transfer all held funds from the contract to a specified address.

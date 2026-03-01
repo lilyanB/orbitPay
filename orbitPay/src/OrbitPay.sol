@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import { IERC20 } from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
-import { SafeERC20 } from "@openzeppelin-contracts-5/token/ERC20/utils/SafeERC20.sol";
-import { IERC165 } from "@openzeppelin-contracts-5/utils/introspection/IERC165.sol";
+import {IERC20} from "@openzeppelin-contracts-5/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin-contracts-5/token/ERC20/utils/SafeERC20.sol";
 
-import { ReceiverTemplate } from "./ReceiverTemplate.sol";
-import { IOrbitPay } from "./interfaces/IOrbitPay.sol";
+import {ReceiverTemplate} from "./ReceiverTemplate.sol";
+import {IOrbitPay} from "./interfaces/IOrbitPay.sol";
 
 /**
  * @title OrbitPay
@@ -23,8 +22,8 @@ contract OrbitPay is IOrbitPay, ReceiverTemplate {
 
     mapping(address => UserInfo) internal _userInfo;
 
-    constructor(address owner, address usdc, address usdt, address weth, address factory)
-        ReceiverTemplate(owner, factory)
+    constructor(address owner, address usdc, address usdt, address weth, address factory, address cre)
+        ReceiverTemplate(owner, cre)
     {
         USDC = IERC20(usdc);
         USDT = IERC20(usdt);
@@ -37,11 +36,6 @@ contract OrbitPay is IOrbitPay, ReceiverTemplate {
     /* -------------------------------------------------------------------------- */
 
     /// @inheritdoc IOrbitPay
-    function getCRE() external view returns (address cre_) {
-        cre_ = getForwarderAddress();
-    }
-
-    /// @inheritdoc IOrbitPay
     function getUserInfo(address user) external view returns (UserInfo memory userInfo_) {
         userInfo_ = _userInfo[user];
     }
@@ -49,13 +43,6 @@ contract OrbitPay is IOrbitPay, ReceiverTemplate {
     /* -------------------------------------------------------------------------- */
     /*                             External Functions                             */
     /* -------------------------------------------------------------------------- */
-
-    /// @inheritdoc IOrbitPay
-    function setCRE(address newCre) external {
-        require(msg.sender == FACTORY, IOrbitPayCallerMustBeFactory());
-        require(getForwarderAddress() == FACTORY, IOrbitPayCREAlreadySet());
-        _setForwarderAddress(newCre);
-    }
 
     /// @inheritdoc IOrbitPay
     function selectToken(uint256 token) external returns (IERC20 token_) {
@@ -72,15 +59,7 @@ contract OrbitPay is IOrbitPay, ReceiverTemplate {
             revert IOrbitPayInvalidToken();
         }
 
-        emit ChosenToken(msg.sender, token_);
-    }
-
-    /// @inheritdoc IOrbitPay
-    function onReport(bytes calldata metadata, bytes calldata report) public override(IOrbitPay, ReceiverTemplate) {
-        if (msg.sender != getForwarderAddress()) {
-            revert IOrbitPayCallerMustBeCRE();
-        }
-        super.onReport(metadata, report);
+        emit SelectToken(msg.sender, token_);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -144,10 +123,5 @@ contract OrbitPay is IOrbitPay, ReceiverTemplate {
         } else {
             token_ = WETH;
         }
-    }
-
-    /// @inheritdoc IERC165
-    function supportsInterface(bytes4 interfaceId) public view override(ReceiverTemplate, IERC165) returns (bool) {
-        return interfaceId == type(IOrbitPay).interfaceId || super.supportsInterface(interfaceId);
     }
 }

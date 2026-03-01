@@ -27,11 +27,4 @@ interface IOrbitPayFactory {
      * @return orbitPay_ The address of the newly created OrbitPay contract.
      */
     function createOrbitPay(address owner) external returns (IOrbitPay orbitPay_);
-
-    /**
-     * @notice Sets the CRE contract address in an existing OrbitPay contract.
-     * @param orbitPayId The ID of the OrbitPay contract.
-     * @param cre The address of the CRE contract.
-     */
-    function setCreInOrbitPay(uint256 orbitPayId, address cre) external;
 }

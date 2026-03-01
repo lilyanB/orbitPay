@@ -57,7 +57,7 @@ contract TestOrbitPay is OrbitPayFixture {
         assertEq(address(orbitPay.USDT()), address(usdt), "USDT address correct");
         assertEq(address(orbitPay.WETH()), address(weth), "WETH address correct");
         assertEq(orbitPay.FACTORY(), factory, "FACTORY address correct");
-        assertEq(orbitPay.CRE(), cre, "CRE address correct");
+        assertEq(orbitPay.getForwarderAddress(), cre, "CRE address correct");
     }
 
     /* -------------------------------------------------------------------------- */
@@ -77,63 +77,21 @@ contract TestOrbitPay is OrbitPayFixture {
     }
 
     /* -------------------------------------------------------------------------- */
-    /*                               setCRE                                       */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * @custom:scenario Test setCRE sets the CRE address
-     * @custom:when The factory calls setCRE on a fresh OrbitPay instance
-     * @custom:then The CRE address should be updated
-     */
-    function test_setCRE() public {
-        address newFactory = makeAddr("NEW_FACTORY");
-        address newCre = makeAddr("NEW_CRE");
-        OrbitPay freshOrbitPay = new OrbitPay(owner, address(usdc), address(usdt), address(weth), newFactory);
-
-        vm.prank(newFactory);
-        freshOrbitPay.setCRE(newCre);
-
-        assertEq(freshOrbitPay.CRE(), newCre, "CRE address set correctly");
-    }
-
-    /**
-     * @custom:scenario Test revert when non-factory address calls setCRE
-     * @custom:when A non-factory address calls setCRE
-     * @custom:then The transaction reverts with `IOrbitPayCallerMustBeFactory`
-     */
-    function test_revertWhen_setCRECallerNotFactory() public {
-        vm.prank(user1);
-        vm.expectRevert(IOrbitPay.IOrbitPayCallerMustBeFactory.selector);
-        orbitPay.setCRE(makeAddr("NEW_CRE"));
-    }
-
-    /**
-     * @custom:scenario Test revert when CRE is already set
-     * @custom:when The factory calls setCRE on an OrbitPay where CRE is already set
-     * @custom:then The transaction reverts with `IOrbitPayCREAlreadySet`
-     */
-    function test_revertWhen_setCREAlreadySet() public {
-        vm.prank(factory);
-        vm.expectRevert(IOrbitPay.IOrbitPayCREAlreadySet.selector);
-        orbitPay.setCRE(makeAddr("NEW_CRE"));
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                              chosenToken                                   */
+    /*                              selectToken                                   */
     /* -------------------------------------------------------------------------- */
 
     /**
      * @custom:scenario Test choosing USDC as payment token
-     * @custom:when A user calls chosenToken with token id 0 (USDC)
+     * @custom:when A user calls selectToken with token id 0 (USDC)
      * @custom:then The transaction should succeed and return the USDC token contract
      * @custom:and The user's chosen token should be stored as USDC
-     * @custom:and A ChosenToken event should be emitted
+     * @custom:and A SelectToken event should be emitted
      */
     function test_chosenTokenUSDC() public {
         vm.prank(user1);
         vm.expectEmit();
-        emit IOrbitPay.ChosenToken(user1, usdc);
-        ERC20Mock token = ERC20Mock(address(orbitPay.chosenToken(0)));
+        emit IOrbitPay.SelectToken(user1, usdc);
+        ERC20Mock token = ERC20Mock(address(orbitPay.selectToken(0)));
 
         assertEq(address(token), address(usdc), "returned token is USDC");
 
@@ -143,16 +101,16 @@ contract TestOrbitPay is OrbitPayFixture {
 
     /**
      * @custom:scenario Test choosing USDT as payment token
-     * @custom:when A user calls chosenToken with token id 1 (USDT)
+     * @custom:when A user calls selectToken with token id 1 (USDT)
      * @custom:then The transaction should succeed and return the USDT token contract
      * @custom:and The user's chosen token should be stored as USDT
-     * @custom:and A ChosenToken event should be emitted
+     * @custom:and A SelectToken event should be emitted
      */
     function test_chosenTokenUSDT() public {
         vm.prank(user1);
         vm.expectEmit();
-        emit IOrbitPay.ChosenToken(user1, usdt);
-        ERC20Mock token = ERC20Mock(address(orbitPay.chosenToken(1)));
+        emit IOrbitPay.SelectToken(user1, usdt);
+        ERC20Mock token = ERC20Mock(address(orbitPay.selectToken(1)));
 
         assertEq(address(token), address(usdt), "returned token is USDT");
 
@@ -162,16 +120,16 @@ contract TestOrbitPay is OrbitPayFixture {
 
     /**
      * @custom:scenario Test choosing WETH as payment token
-     * @custom:when A user calls chosenToken with token id 2 (WETH)
+     * @custom:when A user calls selectToken with token id 2 (WETH)
      * @custom:then The transaction should succeed and return the WETH token contract
      * @custom:and The user's chosen token should be stored as WETH
-     * @custom:and A ChosenToken event should be emitted
+     * @custom:and A SelectToken event should be emitted
      */
     function test_chosenTokenWETH() public {
         vm.prank(user1);
         vm.expectEmit();
-        emit IOrbitPay.ChosenToken(user1, weth);
-        ERC20Mock token = ERC20Mock(address(orbitPay.chosenToken(2)));
+        emit IOrbitPay.SelectToken(user1, weth);
+        ERC20Mock token = ERC20Mock(address(orbitPay.selectToken(2)));
 
         assertEq(address(token), address(weth), "returned token is WETH");
 
@@ -181,46 +139,46 @@ contract TestOrbitPay is OrbitPayFixture {
 
     /**
      * @custom:scenario Test switching token choice
-     * @custom:when A user calls chosenToken multiple times with different tokens
+     * @custom:when A user calls selectToken multiple times with different tokens
      * @custom:then The transaction should succeed and the user's chosen token should be updated
      */
     function test_switchTokenChoice() public {
         vm.prank(user1);
-        orbitPay.chosenToken(0);
+        orbitPay.selectToken(0);
         IOrbitPay.UserInfo memory userInfo = orbitPay.getUserInfo(user1);
         assertEq(uint256(userInfo.token), uint256(IOrbitPay.Token.USDC), "user token is USDC");
 
         vm.prank(user1);
-        orbitPay.chosenToken(1);
+        orbitPay.selectToken(1);
         userInfo = orbitPay.getUserInfo(user1);
         assertEq(uint256(userInfo.token), uint256(IOrbitPay.Token.USDT), "user token is USDT");
 
         vm.prank(user1);
-        orbitPay.chosenToken(2);
+        orbitPay.selectToken(2);
         userInfo = orbitPay.getUserInfo(user1);
         assertEq(uint256(userInfo.token), uint256(IOrbitPay.Token.WETH), "user token is WETH");
     }
 
     /**
      * @custom:scenario Test revert with invalid token id
-     * @custom:when A user calls chosenToken with an invalid token id (3)
+     * @custom:when A user calls selectToken with an invalid token id (3)
      * @custom:then The transaction reverts with `IOrbitPayInvalidToken`
      */
     function test_revertWhen_chosenTokenInvalidToken() public {
         vm.prank(user1);
         vm.expectRevert(IOrbitPay.IOrbitPayInvalidToken.selector);
-        orbitPay.chosenToken(3);
+        orbitPay.selectToken(3);
     }
 
     /**
      * @custom:scenario Test revert with large invalid token id
-     * @custom:when A user calls chosenToken with a large invalid token id
+     * @custom:when A user calls selectToken with a large invalid token id
      * @custom:then The transaction reverts with `IOrbitPayInvalidToken`
      */
     function test_revertWhen_chosenTokenLargeInvalidToken() public {
         vm.prank(user1);
         vm.expectRevert(IOrbitPay.IOrbitPayInvalidToken.selector);
-        orbitPay.chosenToken(type(uint256).max);
+        orbitPay.selectToken(type(uint256).max);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -239,7 +197,7 @@ contract TestOrbitPay is OrbitPayFixture {
         uint256 payAmount = 1000e6;
 
         vm.prank(user1);
-        orbitPay.chosenToken(0);
+        orbitPay.selectToken(0);
 
         vm.prank(user1);
         usdc.approve(address(orbitPay), payAmount);
@@ -280,11 +238,11 @@ contract TestOrbitPay is OrbitPayFixture {
         uint256 payAmount3 = 500e18;
 
         vm.prank(user1);
-        orbitPay.chosenToken(0); // USDC
+        orbitPay.selectToken(0); // USDC
         vm.prank(user2);
-        orbitPay.chosenToken(1); // USDT
+        orbitPay.selectToken(1); // USDT
         vm.prank(user3);
-        orbitPay.chosenToken(2); // WETH
+        orbitPay.selectToken(2); // WETH
 
         vm.prank(user1);
         usdc.approve(address(orbitPay), payAmount1);
@@ -345,9 +303,9 @@ contract TestOrbitPay is OrbitPayFixture {
         uint256 payAmount = 1000e6;
 
         vm.prank(user1);
-        orbitPay.chosenToken(0); // USDC
+        orbitPay.selectToken(0); // USDC
         vm.prank(user2);
-        orbitPay.chosenToken(0); // USDC
+        orbitPay.selectToken(0); // USDC
 
         // Only user1 approves
         vm.prank(user1);
@@ -416,7 +374,7 @@ contract TestOrbitPay is OrbitPayFixture {
         amounts[0] = 1000e6;
 
         vm.prank(user1);
-        vm.expectRevert(IOrbitPay.IOrbitPayCallerMustBeCRE.selector);
+        vm.expectRevert();
         _callOnReport(users, amounts);
     }
 

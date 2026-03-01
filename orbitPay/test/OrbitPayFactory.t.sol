@@ -19,13 +19,15 @@ contract TestOrbitPayFactory is Test {
     ERC20Mock public weth;
     OrbitPayFactory public factory;
     address public owner;
+    address public cre;
 
     function setUp() public {
         owner = makeAddr("OWNER");
+        cre = makeAddr("CRE");
         usdc = new ERC20Mock("USDC", "USDC", 6);
         usdt = new ERC20Mock("USDT", "USDT", 6);
         weth = new ERC20Mock("WETH", "WETH", 18);
-        factory = new OrbitPayFactory(owner, address(usdc), address(usdt), address(weth));
+        factory = new OrbitPayFactory(owner, address(usdc), address(usdt), address(weth), cre);
     }
 
     /* -------------------------------------------------------------------------- */
@@ -121,57 +123,5 @@ contract TestOrbitPayFactory is Test {
         assertEq(factory.getOrbitPay(0), address(orbitPay1), "orbitPay1 stored at ID 0");
         assertEq(factory.getOrbitPay(1), address(orbitPay2), "orbitPay2 stored at ID 1");
         assertTrue(address(orbitPay1) != address(orbitPay2), "distinct contract addresses");
-    }
-
-    /* -------------------------------------------------------------------------- */
-    /*                           setCreInOrbitPay                                 */
-    /* -------------------------------------------------------------------------- */
-
-    /**
-     * @custom:scenario Test setCreInOrbitPay sets the CRE address in an existing OrbitPay
-     * @custom:when The owner calls setCreInOrbitPay with a valid ID and CRE address
-     * @custom:then The CRE address should be set in the OrbitPay contract
-     */
-    function test_setCreInOrbitPay() external {
-        address orbitPayOwner = makeAddr("ORBITPAY_OWNER");
-        address cre = makeAddr("CRE");
-
-        factory.createOrbitPay(orbitPayOwner);
-
-        vm.prank(owner);
-        factory.setCreInOrbitPay(0, cre);
-
-        OrbitPay orbitPay = OrbitPay(factory.getOrbitPay(0));
-        assertEq(orbitPay.CRE(), cre, "CRE set correctly");
-    }
-
-    /**
-     * @custom:scenario Test revert when setCreInOrbitPay is called with an invalid ID
-     * @custom:when The owner calls setCreInOrbitPay with an ID that has no OrbitPay
-     * @custom:then The transaction reverts with `IOrbitPayFactoryInvalidOrbitPayId`
-     */
-    function test_revertWhen_setCreInOrbitPayInvalidId() external {
-        address cre = makeAddr("CRE");
-
-        vm.prank(owner);
-        vm.expectRevert(IOrbitPayFactory.IOrbitPayFactoryInvalidOrbitPayId.selector);
-        factory.setCreInOrbitPay(0, cre);
-    }
-
-    /**
-     * @custom:scenario Test revert when non-owner calls setCreInOrbitPay
-     * @custom:when A non-owner address calls setCreInOrbitPay
-     * @custom:then The transaction reverts with an unauthorized error
-     */
-    function test_revertWhen_setCreInOrbitPayNotOwner() external {
-        address orbitPayOwner = makeAddr("ORBITPAY_OWNER");
-        address cre = makeAddr("CRE");
-        address notOwner = makeAddr("NOT_OWNER");
-
-        factory.createOrbitPay(orbitPayOwner);
-
-        vm.prank(notOwner);
-        vm.expectRevert();
-        factory.setCreInOrbitPay(0, cre);
     }
 }
