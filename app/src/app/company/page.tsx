@@ -32,14 +32,11 @@ function CompanyPage() {
 
     setLoading(true);
     try {
-      // TODO: deploy workflow here and derive the CRE address from the workflow.
-      const creAddress = owner;
-
       const hash = await writeContractAsync({
         address: ORBITPAY_FACTORY_ADDRESS,
         abi: orbitPayFactoryAbi,
         functionName: "createOrbitPay",
-        args: [owner as `0x${string}`, creAddress as `0x${string}`],
+        args: [owner as `0x${string}`],
       });
       await publicClient.waitForTransactionReceipt({ hash });
     } catch (error) {

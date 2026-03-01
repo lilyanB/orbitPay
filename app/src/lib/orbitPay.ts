@@ -26,10 +26,7 @@ export const orbitPayFactoryAbi = [
     type: "function",
     name: "createOrbitPay",
     stateMutability: "nonpayable",
-    inputs: [
-      { name: "owner", type: "address" },
-      { name: "cre", type: "address" },
-    ],
+    inputs: [{ name: "owner", type: "address" }],
     outputs: [{ name: "orbitPay_", type: "address" }],
   },
 ] as const;
