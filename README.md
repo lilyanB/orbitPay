@@ -2,7 +2,11 @@
 
 **OrbitPay automates recurring crypto payments using decentralized workflows secured by Chainlink CRE.**
 
----
+## Quick Links
+
+- OrbitPay deployed by a company: https://sepolia.etherscan.io/address/0xe48F544178a7e9027773912Bd2960aD631Efe74d
+- cre workflow: https://sepolia.etherscan.io/tx/0x2dc063ab40d463b129aeb0245584214685b9ab749f5352a1cf24b8e5539a0600
+- tokens transferred thanks to CRE workflow: https://sepolia.etherscan.io/token/0x23a0485b021ca24efde51114823fdba761359780
 
 ## Overview
 
@@ -13,11 +17,6 @@ It combines:
 - An enterprise API
 - A Chainlink CRE workflow
 - A secure onchain payment smart contract
-- Decentralized price verification
-
-The system eliminates manual operations and single points of failure while maintaining full onchain transparency and institutional-grade security.
-
----
 
 # Non-Technical Description
 
@@ -35,52 +34,23 @@ These systems:
 
 In Web3, recurring payments are not standardized — especially when users want to pay in different crypto assets.
 
----
-
 ## The Solution
 
-OrbitPay enables businesses to automate recurring crypto payments in **USDC, WETH, or WBTC**, while keeping pricing consistent and fair.
-
-### How it works (simple version)
-
-1. Each user chooses the token they want to use (USDC, WETH, or WBTC).
-2. The user grants approval once to the payment smart contract.
-3. Every month, a decentralized workflow checks who needs to pay.
-4. The workflow fetches the current market prices of USDC, WETH, and WBTC.
-5. The correct token amount is calculated based on the subscription price (denominated in USD).
-6. The smart contract verifies payment eligibility.
-7. If valid, the contract pulls the funds automatically.
-
-Everything runs through decentralized consensus via Chainlink CRE.
-
-No centralized price server.  
-No manual intervention.  
-No single point of failure.
-
----
+OrbitPay enables businesses to automate recurring crypto payments in **USDC, WETH, or WBTC**.
 
 ## Supported Tokens
-
-Users can choose to pay in:
 
 - **USDC**
 - **WETH**
 - **WBTC**
-
-The subscription price is denominated in USD, and the workflow converts it into the correct token amount using consensus-verified price data.
-
----
 
 ## Use Cases
 
 - Salaries paid in crypto
 - Web3 SaaS subscriptions
 - DAO recurring contributions
-- Dollar Cost Averaging (DCA)
 - B2B recurring invoices
 - Tokenized rent payments
-
----
 
 # Technical Description
 
@@ -89,13 +59,10 @@ The subscription price is denominated in USD, and the workflow converts it into 
 The system consists of:
 
 1. Enterprise API
-2. Price Data Endpoint
-3. CRE Workflow
-4. Payment Smart Contract
+2. CRE Workflow
+3. Payment Smart Contract
 
----
-
-## 1. Enterprise API
+## Enterprise API
 
 Endpoint:
 GET /api/mustPay
@@ -110,18 +77,9 @@ Example response:
 ]
 ```
 
-## 2. Price Data Fetching
-
-GET /api/tokenPrices
-Example response:
-
-```json
-{
-  "USDC": "1.00",
-  "WETH": "3200.00",
-  "WBTC": "60000.00"
-}
-```
-
 This call is executed via CRE’s HTTP capability and validated through BFT consensus.
 Multiple nodes independently fetch the prices and produce a verified aggregated result.
+
+# V2
+
+We want to add in our smart contract the ability to pay in any ERC20 token with an internal call to an oracle to get the price of the token in USD and calculate the amount to pay.
