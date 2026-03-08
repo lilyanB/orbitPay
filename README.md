@@ -80,8 +80,6 @@ This demonstrates:
 
 The workflow ensures trustless, decentralized execution of recurring payments without relying on centralized automation services.
 
----
-
 ## Enterprise API
 
 Endpoint:
