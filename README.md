@@ -4,7 +4,7 @@
 
 ## 🎥 Demo Video
 
-<video src="finalPres.mp4" controls></video>
+https://github.com/user-attachments/assets/2fbbf53f-e857-403f-8cff-86f57c74f7c3
 
 ## Quick Links
 
