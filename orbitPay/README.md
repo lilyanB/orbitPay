@@ -1,21 +1,64 @@
 # Info
 
-```
-forge script script/Mocks.s.sol:MocksScript --rpc-url https://ethereum-sepolia-rpc.publicnode.com --broadcast --private-key abc123...
+## Network Configuration
+
+| Network                      | RPC URL                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| **Tenderly Virtual Sepolia** | `https://virtual.sepolia.eu.rpc.tenderly.co/8e5c0089-57b6-4643-9ef0-7353f9ed6aa6` |
+| **Sepolia**                  | `https://ethereum-sepolia-rpc.publicnode.com`                                     |
+
+## Deployed Contracts
+
+### Mock Tokens
+
+| Contract | Tenderly Virtual Sepolia                     | Sepolia                                      |
+| -------- | -------------------------------------------- | -------------------------------------------- |
+| **USDT** | `0xf52FF74E6e889BFa690b22F871385c5B3ABF1bFB` | `0xa0a5a661f7fad0E1F5B5a9C479de51eEEf4D1223` |
+| **USDC** | `0xf75e01b4fbe2fF23361ee6D2F5714426441bcA09` | `0x23a0485b021CA24efde51114823FDbA761359780` |
+| **WETH** | `0x36D88642Da6Ef14bAEd52379DE325D3980a2F686` | `0x260B90dFf3F586B1141790a212D7437D5521d5B8` |
+
+### OrbitPay Contracts
+
+| Contract            | Tenderly Virtual Sepolia                     | Sepolia                                      |
+| ------------------- | -------------------------------------------- | -------------------------------------------- |
+| **OrbitPayFactory** | `0x3BeB5588FAcB269761D45641016e9E2E89f94230` | `0xb13d776541cbb3694B4E10b9122Eb9F6A903130f` |
+
+## Deployment Commands
+
+### Deploy Mocks
+
+**Tenderly:**
+
+```bash
+forge script script/Mocks.s.sol:MocksScript \
+  --rpc-url https://virtual.sepolia.eu.rpc.tenderly.co/8e5c0089-57b6-4643-9ef0-7353f9ed6aa6 \
+  --broadcast --private-key abc123...
 ```
 
-```
-usdc_: contract IERC20 0x23a0485b021CA24efde51114823FDbA761359780
-usdt_: contract IERC20 0xa0a5a661f7fad0E1F5B5a9C479de51eEEf4D1223
-weth_: contract IERC20 0x260B90dFf3F586B1141790a212D7437D5521d5B8
+**Sepolia:**
+
+```bash
+forge script script/Mocks.s.sol:MocksScript \
+  --rpc-url https://ethereum-sepolia-rpc.publicnode.com \
+  --broadcast --private-key abc123...
 ```
 
-```
-forge script script/OrbitPayFactory.s.sol:OrbitPayFactoryScript 0x607A577659Cad2A2799120DfdEEde39De2D38706 --rpc-url https://ethereum-sepolia-rpc.publicnode.com --broadcast --private-key abc123...
+### Deploy OrbitPayFactory
+
+**Tenderly:**
+
+```bash
+forge script script/OrbitPayFactory.s.sol:OrbitPayFactoryScript 0x607A577659Cad2A2799120DfdEEde39De2D38706 \
+  --rpc-url https://virtual.sepolia.eu.rpc.tenderly.co/8e5c0089-57b6-4643-9ef0-7353f9ed6aa6 \
+  --broadcast --private-key abc123...
 ```
 
-```
-orbitPayFactory_: contract OrbitPayFactory 0xb13d776541cbb3694B4E10b9122Eb9F6A903130f
+**Sepolia:**
+
+```bash
+forge script script/OrbitPayFactory.s.sol:OrbitPayFactoryScript 0x607A577659Cad2A2799120DfdEEde39De2D38706 \
+  --rpc-url https://ethereum-sepolia-rpc.publicnode.com \
+  --broadcast --private-key abc123...
 ```
 
 https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory-ts
