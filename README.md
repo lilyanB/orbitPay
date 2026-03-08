@@ -1,6 +1,12 @@
 # OrbitPay
 
-**OrbitPay automates recurring crypto payments using decentralized workflows secured by Chainlink CRE.**
+**Automated recurring crypto payments powered by Chainlink CRE workflows**
+
+## 🎥 Demo Video
+
+<video src="finalPres.mp4" controls></video>
+
+## Quick Links
 
 | Network                      | RPC URL                                                                           |
 | ---------------------------- | --------------------------------------------------------------------------------- |
@@ -23,65 +29,58 @@
 | ------------------- | -------------------------------------------- | -------------------------------------------- |
 | **OrbitPayFactory** | `0x3BeB5588FAcB269761D45641016e9E2E89f94230` | `0xb13d776541cbb3694B4E10b9122Eb9F6A903130f` |
 
-## Quick Links
-
 - OrbitPay deployed by a company: https://sepolia.etherscan.io/address/0xe48F544178a7e9027773912Bd2960aD631Efe74d
 - cre workflow: https://sepolia.etherscan.io/tx/0x2dc063ab40d463b129aeb0245584214685b9ab749f5352a1cf24b8e5539a0600
 - tokens transferred thanks to CRE workflow: https://sepolia.etherscan.io/token/0x23a0485b021ca24efde51114823fdba761359780
 
-## Overview
+## 📋 Project Presentation
 
-OrbitPay is a decentralized recurring payment infrastructure that enables businesses to automate subscriptions, salaries, DCA strategies, and other periodic transfers in crypto assets.
+### What is OrbitPay?
 
-It combines:
+OrbitPay is a decentralized recurring payment infrastructure that enables businesses to automate subscriptions, salaries, DCA strategies, and other periodic transfers in crypto assets (USDC, WETH, WBTC).
 
-- An enterprise API
-- A Chainlink CRE workflow
-- A secure onchain payment smart contract
+**The Problem:**
+Recurring payments today rely on centralized banking systems or payment processors that depend on trusted intermediaries, can be censored, lack blockchain transparency, require manual operational management, and introduce single points of failure. In Web3, recurring payments are not standardized.
 
-# Non-Technical Description
+**The Solution:**
+OrbitPay automates recurring crypto payments using three components:
 
-## The Problem
+1. **Enterprise API** - Returns who needs to be paid and how much via GET /api/mustPay endpoint
+2. **Chainlink CRE Workflow** - Executes HTTP calls to the API through BFT consensus, validates results across multiple nodes, and triggers on-chain payments
+3. **Smart Contracts** - Secure on-chain payment contracts (OrbitPayFactory and OrbitPay) that handle the actual token transfers
 
-Recurring payments today rely on centralized banking systems or payment processors.
+The system leverages Chainlink CRE's HTTP capability to fetch payment data in a decentralized manner, ensuring that no single point of failure can manipulate payment execution.
 
-These systems:
+### How is it Built?
 
-- Depend on trusted intermediaries
-- Can be censored or restricted
-- Lack blockchain transparency
-- Require manual operational management
-- Introduce single points of failure
+- **Smart Contracts**: Solidity contracts using Foundry framework (OrbitPayFactory, OrbitPay, ReceiverTemplate)
+- **Chainlink CRE**: TypeScript workflows for decentralized automation and HTTP consensus
+- **Frontend**: Next.js 13 App Router with wagmi for Web3 integration
+- **Networks**: Deployed on Sepolia testnet and Tenderly Virtual Sepolia
+- **Token Support**: ERC20 mock tokens (USDC, WETH, USDT) for testing
 
-In Web3, recurring payments are not standardized — especially when users want to pay in different crypto assets.
+### Key Challenges
 
-## The Solution
+- **Batch Processing**: Implementing efficient batch processing (BATCH_SIZE = 20) to handle multiple payments in a single transaction while staying within gas limits
+- **HTTP Consensus**: Ensuring the enterprise API responses are validated through BFT consensus using Chainlink CRE's `consensusIdenticalAggregation` to prevent manipulation
+- **Report Signing & Verification**: Properly encoding payment data as ABI parameters and generating signed reports that the smart contract can verify on-chain
+- **Multi-network Deployment**: Managing deployments across Sepolia and Tenderly Virtual Sepolia with different contract addresses
+- **Gas Optimization**: Balancing between batch size and gas costs while maintaining reliability
 
-OrbitPay enables businesses to automate recurring crypto payments in **USDC, WETH, or WBTC**.
+### Chainlink Usage
 
-## Supported Tokens
+**Primary Integration:** [CRE Workflow Implementation](cre/orbitPay/main.ts)
 
-- **USDC**
-- **WETH**
-- **WBTC**
+This demonstrates:
 
-## Use Cases
+- **CronCapability**: Automated scheduled execution of payment workflows
+- **HTTPClient with BFT Consensus**: Fetching payment data from enterprise API with `consensusIdenticalAggregation()` ensuring multiple nodes validate the response
+- **EVMClient**: Writing cryptographically signed reports to the blockchain
+- **Report Generation**: Creating verifiable on-chain reports using `runtime.report()` with ECDSA signatures and keccak256 hashing
 
-- Salaries paid in crypto
-- Web3 SaaS subscriptions
-- DAO recurring contributions
-- B2B recurring invoices
-- Tokenized rent payments
+The workflow ensures trustless, decentralized execution of recurring payments without relying on centralized automation services.
 
-# Technical Description
-
-## System Architecture
-
-The system consists of:
-
-1. Enterprise API
-2. CRE Workflow
-3. Payment Smart Contract
+---
 
 ## Enterprise API
 
